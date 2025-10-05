@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stepper Race Game</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    canvas {
+      background: #2c3e50;
+      display: block;
+      margin: 20px auto;
+      border: 4px solid #000;
+    }
+    #menu, #playerNames {
+      margin: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      display: inline-block;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      padding: 8px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #gameControls {
+      margin: 20px;
+    }
+    .player-btn {
+      font-size: 20px;
+      font-weight: bold;
+      min-width: 120px;
+      margin: 5px;
+    }
+    .p1 { background: #e74c3c; }
+    .p2 { background: #3498db; }
+    .p3 { background: #2ecc71; }
+    .p4 { background: #f39c12; }
+  </style>
+</head>
+<body>
+  <h1>Stepper Race Game</h1>
+  
+  <div id="menu">
+    <h2>Select Number of Players</h2>
+    <button onclick="showPlayerNames(1)">1 Player</button>
+    <button onclick="showPlayerNames(2)">2 Players</button>
+    <button onclick="showPlayerNames(3)">3 Players</button>
+    <button onclick="showPlayerNames(4)">4 Players</button>
+  </div>
+  
+  <div id="playerNames" style="display: none;">
+    <h2>Enter Player Names</h2>
+    <div id="nameInputs"></div>
+    <button onclick="startGame()">Start Race!</button>
+  </div>
+  
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  
+  <div id="gameControls" style="display: none;">
+    <h3>Click buttons to move players:</h3>
+    <button class="player-btn p1" onclick="movePlayer(1)">Player 1 Step</button>
+    <button class="player-btn p2" onclick="movePlayer(2)">Player 2 Step</button>
+    <button class="player-btn p3" onclick="movePlayer(3)">Player 3 Step</button>
+    <button class="player-btn p4" onclick="movePlayer(4)">Player 4 Step</button>
+    <br><br>
+    <small>Or use keyboard: Press 1, 2, 3, 4 keys</small>
+  </div>
+
+  <script>
+    let players = [];
+    let totalPlayers = 1;
+    let gameRunning = false;
+    let playerNames = [];
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const colors = ["#e74c3c", "#3498db", "#2ecc71", "#f39c12"];
+
+    function showPlayerNames(numPlayers) {
+      totalPlayers = numPlayers;
+      document.getElementById("menu").style.display = "none";
+      
+      const nameInputs = document.getElementById("nameInputs");
+      nameInputs.innerHTML = "";
+      
+      for (let i = 0; i < numPlayers; i++) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = `Player ${i+1} Name`;
+        input.id = `player${i+1}Name`;
+        input.value = `Player ${i+1}`;
+        nameInputs.appendChild(input);
+        nameInputs.appendChild(document.createElement("br"));
+      }
+      
+      document.getElementById("playerNames").style.display = "block";
+    }
+
+    function startGame() {
+      // Get player names
+      playerNames = [];
+      for (let i = 0; i < totalPlayers; i++) {
+        const name = document.getElementById(`player${i+1}Name`).value || `Player ${i+1}`;
+        playerNames.push(name);
+      }
+      
+      // Initialize players
+      players = [];
+      let laneWidth = canvas.width / totalPlayers;
+      for (let i = 0; i < totalPlayers; i++) {
+        players.push({
+          x: laneWidth * i + laneWidth / 2 - 20,
+          y: canvas.height - 80,
+          color: colors[i],
+          lane: i,
+          name: playerNames[i]
+        });
+      }
+
+      gameRunning = true;
+      document.getElementById("playerNames").style.display = "none";
+      document.getElementById("gameControls").style.display = "block";
+
+      requestAnimationFrame(draw);
+    }
+
+    function movePlayer(p) {
+      if (p <= players.length && p > 0) {
+        players[p - 1].y -= 30; // move up per step
+        checkWin(p);
+      }
+    }
+
+    function checkWin(p) {
+      if (players[p - 1].y <= 50) {
+        gameRunning = false;
+        const winnerName = playerNames[p - 1];
+        alert(`🎉 ${winnerName} Wins the Race! 🎉`);
+        document.getElementById("gameControls").style.display = "none";
+        
+        // Show restart button
+        const restartBtn = document.createElement("button");
+        restartBtn.textContent = "Play Again";
+        restartBtn.onclick = () => location.reload();
+        restartBtn.style.fontSize = "20px";
+        restartBtn.style.padding = "15px 30px";
+        document.body.appendChild(restartBtn);
+      }
+    }
+
+    function drawTrack() {
+      // Sky
+      ctx.fillStyle = "#87CEEB";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Road
+      ctx.fillStyle = "#444";
+      ctx.fillRect(50, 0, canvas.width - 100, canvas.height);
+
+      // Lane dividers
+      let laneWidth = (canvas.width - 100) / totalPlayers;
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      for (let i = 1; i < totalPlayers; i++) {
+        let x = 50 + laneWidth * i;
+        ctx.setLineDash([15, 15]);
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Finish line - full width
+      ctx.fillStyle = "white";
+      ctx.fillRect(50, 40, canvas.width - 100, 10);
+      
+      // Checkered pattern
+      ctx.fillStyle = "black";
+      const checkSize = 15;
+      for (let i = 0; i < Math.floor((canvas.width - 100) / checkSize); i++) {
+        for (let j = 0; j < 2; j++) {
+          if ((i + j) % 2 === 0) {
+            ctx.fillRect(50 + i * checkSize, 40 + j * checkSize, checkSize, checkSize);
+          }
+        }
+      }
+      
+      // Start line
+      ctx.fillStyle = "white";
+      ctx.fillRect(50, canvas.height - 80, canvas.width - 100, 5);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawTrack();
+
+      // Draw players
+      players.forEach((p, i) => {
+        // Draw car
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, 40, 60);
+        
+        // Draw player name
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(p.name, p.x + 20, p.y - 5);
+        
+        // Draw player number
+        ctx.fillStyle = "white";
+        ctx.font = "bold 16px Arial";
+        ctx.fillText((i + 1).toString(), p.x + 20, p.y + 35);
+      });
+
+      if (gameRunning) requestAnimationFrame(draw);
+    }
+
+    // Keyboard controls
+    document.addEventListener("keydown", (e) => {
+      if (!gameRunning) return;
+      if (e.key === "1") movePlayer(1);
+      if (e.key === "2") movePlayer(2);
+      if (e.key === "3") movePlayer(3);
+      if (e.key === "4") movePlayer(4);
+    });
+  </script>
+</body>
+</html>
