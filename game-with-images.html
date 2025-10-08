@@ -1,9 +1,7 @@
-
-You said:
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Stepper Race Game - Long Track</title>
+  <title>Stepper Race Game</title>
   <style>
     body {
       text-align: center;
@@ -13,6 +11,7 @@ You said:
       margin: 0;
       padding: 20px;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     
     .game-container {
@@ -32,7 +31,7 @@ You said:
       border-radius: 10px;
     }
     
-    #menu, #playerNames {
+    .setup-page {
       margin: 20px;
       padding: 30px;
       background: rgba(255, 255, 255, 0.1);
@@ -112,83 +111,129 @@ You said:
       animation: bounce 0.3s ease-in-out;
     }
     
-    /* Progress bars */
-    .progress-container {
-      width: 80%;
-      margin: 10px auto;
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-      height: 20px;
-      overflow: hidden;
-    }
-    
-    .progress-bar {
-      height: 100%;
-      border-radius: 10px;
-      transition: width 0.3s ease;
-    }
-    
-    /* Confetti */
+    /* Enhanced Confetti */
     .confetti {
       position: fixed;
-      width: 10px;
-      height: 10px;
+      width: 15px;
+      height: 15px;
       pointer-events: none;
+      z-index: 1000;
     }
     
     @keyframes confetti-fall {
       0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
     
-    h1 {
-      font-size: 3em;
-      margin-bottom: 20px;
+    @keyframes confetti-spiral {
+      0% { transform: translateY(-100px) rotate(0deg) translateX(0); opacity: 1; }
+      50% { transform: translateY(50vh) rotate(180deg) translateX(100px); opacity: 0.8; }
+      100% { transform: translateY(100vh) rotate(360deg) translateX(0); opacity: 0; }
+    }
+    
+    @keyframes confetti-wave {
+      0% { transform: translateY(-100px) translateX(-100px) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(50vh) translateX(0) rotate(180deg); opacity: 0.8; }
+      100% { transform: translateY(100vh) translateX(100px) rotate(360deg); opacity: 0; }
+    }
+    
+    @keyframes confetti-explode {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg); opacity: 0; }
+    }
+    
+    /* Simple Winner Display */
+    .winner-display {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      z-index: 2001;
+      box-shadow: 0 0 50px rgba(255,255,255,0.5);
+      border: 3px solid gold;
+      pointer-events: auto;
+    }
+    
+    .winner-display h2 {
+      font-size: 2.5em;
+      margin: 0;
+      color: gold;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+    }
+    
+    .winner-display p {
+      font-size: 3em;
+      margin: 20px 0;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .firework {
+      position: fixed;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    @keyframes firework {
+      0% { transform: translate(var(--x), var(--y)) scale(0); opacity: 1; }
+      50% { opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; }
+    }
+    
+    /* Page transitions */
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    .nav-buttons {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <div class="game-container">
-    <h1>🏁 Stepper Race Game 🏁</h1>
-    
-    <div id="menu">
+    <!-- Player Selection Page -->
+    <div id="playerSelection" class="setup-page page active">
       <h2>🎮 Select Number of Players</h2>
-      <button onclick="showPlayerNames(1)">1 Player</button>
-      <button onclick="showPlayerNames(2)">2 Players</button>
-      <button onclick="showPlayerNames(3)">3 Players</button>
-      <button onclick="showPlayerNames(4)">4 Players</button>
+      <button onclick="selectPlayers(1)">1 Player</button>
+      <button onclick="selectPlayers(2)">2 Players</button>
+      <button onclick="selectPlayers(3)">3 Players</button>
+      <button onclick="selectPlayers(4)">4 Players</button>
     </div>
     
-    <div id="playerNames" style="display: none;">
+    <!-- Name Entry Page -->
+    <div id="nameEntry" class="setup-page page">
       <h2>👤 Enter Player Names</h2>
       <div id="nameInputs"></div>
-      <button onclick="startGame()">🚀 Start Race!</button>
+      <div class="nav-buttons">
+        <button onclick="goBackToSelection()">← Back</button>
+        <button onclick="startGame()">🚀 Start Game</button>
+      </div>
     </div>
     
-    <!-- Progress Bars -->
-    <div id="progressBars" style="display: none;">
-      <h3>Race Progress</h3>
-      <div id="progressContainer"></div>
-    </div>
-    
-    <!-- Game Canvas - Made taller for longer track -->
-    <canvas id="gameCanvas" width="500" height="800"></canvas>
-    
-    <div id="gameControls" style="display: none;">
-      <h3>🎯 Step Controls</h3>
-      <button class="player-btn p1" onclick="movePlayer(1)">Player 1 🚗</button>
-      <button class="player-btn p2" onclick="movePlayer(2)">Player 2 🚙</button>
-      <button class="player-btn p3" onclick="movePlayer(3)">Player 3 🏎️</button>
-      <button class="player-btn p4" onclick="movePlayer(4)">Player 4 🚕</button>
-      <br><br>
-      <small>🎹 Keyboard: Press 1, 2, 3, 4 keys</small>
-      <br>
-      <small>📏 Distance to finish: <span id="distance">0</span> steps</small>
+    <!-- Game Page -->
+    <div id="gamePage" class="page">
+      <!-- Game Canvas - Made taller for longer track -->
+      <canvas id="gameCanvas" width="500" height="800"></canvas>
+      
+      <div id="gameControls">
+        <button class="player-btn p1" onclick="movePlayer(1)">Move Player 1</button>
+        <button class="player-btn p2" onclick="movePlayer(2)">Move Player 2</button>
+        <button class="player-btn p3" onclick="movePlayer(3)">Move Player 3</button>
+        <button class="player-btn p4" onclick="movePlayer(4)">Move Player 4</button>
+      </div>
     </div>
   </div>
 
@@ -208,11 +253,18 @@ You said:
     const carEmojis = ["🚗", "🚙", "🏎️", "🚕"];
     const colors = ["#e74c3c", "#3498db", "#2ecc71", "#f39c12"];
     const colorNames = ["Red", "Blue", "Green", "Yellow"];
+    
+    // Track key states to prevent key repeat
+    let keysPressed = {};
 
-    function showPlayerNames(numPlayers) {
+    function selectPlayers(numPlayers) {
       totalPlayers = numPlayers;
-      document.getElementById("menu").style.display = "none";
       
+      // Hide player selection, show name entry
+      document.getElementById("playerSelection").classList.remove("active");
+      document.getElementById("nameEntry").classList.add("active");
+      
+      // Create name inputs
       const nameInputs = document.getElementById("nameInputs");
       nameInputs.innerHTML = "";
       
@@ -225,8 +277,12 @@ You said:
         nameInputs.appendChild(input);
         nameInputs.appendChild(document.createElement("br"));
       }
-      
-      document.getElementById("playerNames").style.display = "block";
+    }
+
+    function goBackToSelection() {
+      // Hide name entry, show player selection
+      document.getElementById("nameEntry").classList.remove("active");
+      document.getElementById("playerSelection").classList.add("active");
     }
 
     function startGame() {
@@ -254,63 +310,12 @@ You said:
       }
 
       gameRunning = true;
-      document.getElementById("playerNames").style.display = "none";
-      document.getElementById("gameControls").style.display = "block";
-      document.getElementById("progressBars").style.display = "block";
       
-      // Create progress bars
-      createProgressBars();
-      
-      // Update distance display
-      updateDistance();
+      // Hide name entry, show game page
+      document.getElementById("nameEntry").classList.remove("active");
+      document.getElementById("gamePage").classList.add("active");
 
       requestAnimationFrame(draw);
-    }
-
-    function createProgressBars() {
-      const container = document.getElementById("progressContainer");
-      container.innerHTML = "";
-      
-      players.forEach((player, index) => {
-        const progressDiv = document.createElement("div");
-        progressDiv.className = "progress-container";
-        
-        const bar = document.createElement("div");
-        bar.className = "progress-bar";
-        bar.id = `progress${index + 1}`;
-        bar.style.background = `linear-gradient(45deg, ${colors[index]}, ${colors[index]}99)`;
-        bar.style.width = "0%";
-        
-        const label = document.createElement("div");
-        label.style.margin = "5px 0";
-        label.innerHTML = `<strong>${player.name}</strong>: <span id="progressText${index + 1}">0%</span>`;
-        
-        progressDiv.appendChild(bar);
-        container.appendChild(label);
-        container.appendChild(progressDiv);
-      });
-    }
-
-    function updateProgress() {
-      players.forEach((player, index) => {
-        const progress = ((canvas.height - 60 - player.y) / TRACK_LENGTH) * 100;
-        player.progress = Math.min(100, Math.max(0, progress));
-        
-        const bar = document.getElementById(`progress${index + 1}`);
-        const text = document.getElementById(`progressText${index + 1}`);
-        
-        if (bar && text) {
-          bar.style.width = `${player.progress}%`;
-          text.textContent = `${Math.round(player.progress)}%`;
-        }
-      });
-    }
-
-    function updateDistance() {
-      if (players.length > 0) {
-        const distance = Math.ceil((players[0].y - FINISH_LINE) / STEP_SIZE);
-        document.getElementById("distance").textContent = distance;
-      }
     }
 
     function movePlayer(p) {
@@ -324,9 +329,7 @@ You said:
         // Move player
         players[p - 1].y -= STEP_SIZE;
         
-        // Update progress and check win
-        updateProgress();
-        updateDistance();
+        // Check win
         checkWin(p);
         
         // Button animation
@@ -342,42 +345,155 @@ You said:
       if (players[p - 1].y <= FINISH_LINE) {
         gameRunning = false;
         const winnerName = playerNames[p - 1];
+        const winnerColor = colors[p - 1];
         
-        // Create celebration
-        createConfetti();
+        // Create enhanced celebration
+        createEnhancedConfetti(winnerColor);
+        createFireworks();
         
         setTimeout(() => {
-          // Fancy win message
-          const winDiv = document.createElement("div");
-          winDiv.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, ${colors[p-1]}, ${colors[p-1]}99);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            z-index: 1000;
-            box-shadow: 0 0 50px rgba(255,255,255,0.5);
-            border: 5px solid gold;
-          `;
-          winDiv.innerHTML = `
-            <h1 style="font-size: 3em; margin: 0;">🎉 VICTORY! 🎉</h1>
-            <h2 style="font-size: 2em; margin: 20px 0;">${winnerName} Wins!</h2>
-            <p>🏁 First to cross the finish line! 🏁</p>
-            <button onclick="location.reload()" style="
-              padding: 15px 30px;
-              font-size: 1.5em;
-              background: gold;
-              border: none;
-              border-radius: 10px;
-              cursor: pointer;
-              margin-top: 20px;
-            ">Play Again 🔄</button>
-          `;
-          document.body.appendChild(winDiv);
-        }, 1500);
+          showWinner(winnerName);
+        }, 1000);
+      }
+    }
+
+    function showWinner(winnerName) {
+      const winnerDiv = document.createElement('div');
+      winnerDiv.className = 'winner-display';
+      winnerDiv.innerHTML = `
+        <h2>WINNER</h2>
+        <p>${winnerName}</p>
+        <button onclick="location.reload()" style="
+          padding: 10px 20px;
+          font-size: 1em;
+          background: gold;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          margin-top: 20px;
+          color: black;
+          font-weight: bold;
+        ">Play Again</button>
+      `;
+      document.body.appendChild(winnerDiv);
+      
+      // Add confetti directly to the winner popup
+      createWinnerConfetti();
+    }
+
+    function createWinnerConfetti() {
+      const winnerDiv = document.querySelector('.winner-display');
+      const confettiColors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
+      
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          
+          // Random size and shape
+          const size = Math.random() * 10 + 5;
+          confetti.style.width = `${size}px`;
+          confetti.style.height = `${size}px`;
+          
+          // Random color
+          confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+          
+          // Position inside winner popup
+          confetti.style.position = 'absolute';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.top = Math.random() * 100 + '%';
+          
+          // Random animation type
+          const animationType = Math.floor(Math.random() * 3);
+          let animationName = 'confetti-fall';
+          let animationDuration = Math.random() * 3 + 2;
+          
+          if (animationType === 1) {
+            animationName = 'confetti-spiral';
+            animationDuration = Math.random() * 4 + 3;
+          } else if (animationType === 2) {
+            animationName = 'confetti-wave';
+            animationDuration = Math.random() * 3 + 2;
+          }
+          
+          confetti.style.animation = `${animationName} ${animationDuration}s linear forwards`;
+          
+          // Random rotation
+          confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+          
+          winnerDiv.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), animationDuration * 1000);
+        }, i * 100);
+      }
+    }
+
+    function createEnhancedConfetti(color) {
+      const confettiColors = [color, '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e74c3c'];
+      
+      // Create multiple types of confetti with different animations
+      for (let i = 0; i < 200; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          
+          // Random size and shape
+          const size = Math.random() * 15 + 5;
+          confetti.style.width = `${size}px`;
+          confetti.style.height = `${size}px`;
+          
+          // Random color
+          confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+          
+          // Random position
+          confetti.style.left = Math.random() * 100 + 'vw';
+          
+          // Random animation type
+          const animationType = Math.floor(Math.random() * 3);
+          let animationName = 'confetti-fall';
+          let animationDuration = Math.random() * 3 + 2;
+          
+          if (animationType === 1) {
+            animationName = 'confetti-spiral';
+            animationDuration = Math.random() * 4 + 3;
+          } else if (animationType === 2) {
+            animationName = 'confetti-wave';
+            animationDuration = Math.random() * 3 + 2;
+          }
+          
+          confetti.style.animation = `${animationName} ${animationDuration}s linear forwards`;
+          
+          // Random rotation
+          confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+          
+          document.body.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), animationDuration * 1000);
+        }, i * 20);
+      }
+    }
+
+    function createFireworks() {
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const firework = document.createElement('div');
+          firework.className = 'firework';
+          firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          firework.style.left = `${Math.random() * 100}vw`;
+          firework.style.top = `${Math.random() * 100}vh`;
+          
+          // Random explosion direction and distance
+          const tx = (Math.random() - 0.5) * 200;
+          const ty = (Math.random() - 0.5) * 200;
+          firework.style.setProperty('--tx', `${tx}px`);
+          firework.style.setProperty('--ty', `${ty}px`);
+          
+          firework.style.animation = `firework ${Math.random() * 1 + 0.5}s ease-out forwards`;
+          
+          document.body.appendChild(firework);
+          
+          setTimeout(() => firework.remove(), 1500);
+        }, i * 150);
       }
     }
 
@@ -500,45 +616,22 @@ You said:
 
       if (gameRunning) requestAnimationFrame(draw);
     }
-    
-    function createConfetti() {
-      const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c'];
-      
-      for (let i = 0; i < 150; i++) {
-        setTimeout(() => {
-          const confetti = document.createElement('div');
-          confetti.className = 'confetti';
-          confetti.style.left = Math.random() * 100 + 'vw';
-          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-          confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
-          document.body.appendChild(confetti);
-          
-          setTimeout(() => confetti.remove(), 5000);
-        }, i * 30);
-      }
-    }
 
-    // Keyboard controls
+    // Keyboard controls with anti-repeat
     document.addEventListener("keydown", (e) => {
-      if (!gameRunning) return;
+      if (!gameRunning || keysPressed[e.key]) return;
+      
+      keysPressed[e.key] = true;
+      
       if (e.key === "1") movePlayer(1);
       if (e.key === "2") movePlayer(2);
       if (e.key === "3") movePlayer(3);
       if (e.key === "4") movePlayer(4);
     });
 
-    // Add confetti style if not exists
-    if (!document.querySelector('#confetti-style')) {
-      const style = document.createElement('style');
-      style.id = 'confetti-style';
-      style.textContent = `
-        @keyframes confetti-fall {
-          0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-    }
+    document.addEventListener("keyup", (e) => {
+      keysPressed[e.key] = false;
+    });
   </script>
 </body>
 </html>
