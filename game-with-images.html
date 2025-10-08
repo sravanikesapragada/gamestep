@@ -147,6 +147,7 @@ You said:
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
       background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
   </style>
@@ -218,9 +219,9 @@ You said:
       for (let i = 0; i < numPlayers; i++) {
         const input = document.createElement("input");
         input.type = "text";
-        input.placeholder = ${colorNames[i]} Player Name;
-        input.id = player${i+1}Name;
-        input.value = ${colorNames[i]} Racer;
+        input.placeholder = `${colorNames[i]} Player Name`;
+        input.id = `player${i+1}Name`;
+        input.value = `${colorNames[i]} Racer`;
         nameInputs.appendChild(input);
         nameInputs.appendChild(document.createElement("br"));
       }
@@ -232,7 +233,7 @@ You said:
       // Get player names
       playerNames = [];
       for (let i = 0; i < totalPlayers; i++) {
-        const name = document.getElementById(player${i+1}Name).value || ${colorNames[i]} Racer;
+        const name = document.getElementById(`player${i+1}Name`).value || `${colorNames[i]} Racer`;
         playerNames.push(name);
       }
       
@@ -276,13 +277,13 @@ You said:
         
         const bar = document.createElement("div");
         bar.className = "progress-bar";
-        bar.id = progress${index + 1};
-        bar.style.background = linear-gradient(45deg, ${colors[index]}, ${colors[index]}99);
+        bar.id = `progress${index + 1}`;
+        bar.style.background = `linear-gradient(45deg, ${colors[index]}, ${colors[index]}99)`;
         bar.style.width = "0%";
         
         const label = document.createElement("div");
         label.style.margin = "5px 0";
-        label.innerHTML = <strong>${player.name}</strong>: <span id="progressText${index + 1}">0%</span>;
+        label.innerHTML = `<strong>${player.name}</strong>: <span id="progressText${index + 1}">0%</span>`;
         
         progressDiv.appendChild(bar);
         container.appendChild(label);
@@ -295,12 +296,12 @@ You said:
         const progress = ((canvas.height - 60 - player.y) / TRACK_LENGTH) * 100;
         player.progress = Math.min(100, Math.max(0, progress));
         
-        const bar = document.getElementById(progress${index + 1});
-        const text = document.getElementById(progressText${index + 1});
+        const bar = document.getElementById(`progress${index + 1}`);
+        const text = document.getElementById(`progressText${index + 1}`);
         
         if (bar && text) {
-          bar.style.width = ${player.progress}%;
-          text.textContent = ${Math.round(player.progress)}%;
+          bar.style.width = `${player.progress}%`;
+          text.textContent = `${Math.round(player.progress)}%`;
         }
       });
     }
@@ -329,7 +330,7 @@ You said:
         checkWin(p);
         
         // Button animation
-        const button = document.querySelector(.player-btn.p${p});
+        const button = document.querySelector(`.player-btn.p${p}`);
         button.classList.add('bounce');
         setTimeout(() => {
           button.classList.remove('bounce');
@@ -348,7 +349,7 @@ You said:
         setTimeout(() => {
           // Fancy win message
           const winDiv = document.createElement("div");
-          winDiv.style.cssText = 
+          winDiv.style.cssText = `
             position: fixed;
             top: 50%;
             left: 50%;
@@ -360,8 +361,8 @@ You said:
             z-index: 1000;
             box-shadow: 0 0 50px rgba(255,255,255,0.5);
             border: 5px solid gold;
-          ;
-          winDiv.innerHTML = 
+          `;
+          winDiv.innerHTML = `
             <h1 style="font-size: 3em; margin: 0;">🎉 VICTORY! 🎉</h1>
             <h2 style="font-size: 2em; margin: 20px 0;">${winnerName} Wins!</h2>
             <p>🏁 First to cross the finish line! 🏁</p>
@@ -374,7 +375,7 @@ You said:
               cursor: pointer;
               margin-top: 20px;
             ">Play Again 🔄</button>
-          ;
+          `;
           document.body.appendChild(winDiv);
         }, 1500);
       }
@@ -448,7 +449,7 @@ You said:
       ctx.font = "12px Arial";
       ctx.textAlign = "right";
       for (let y = canvas.height - 100; y > FINISH_LINE; y -= 100) {
-        ctx.fillText(${Math.round((canvas.height - 60 - y) / STEP_SIZE)}, 50, y);
+        ctx.fillText(`${Math.round((canvas.height - 60 - y) / STEP_SIZE)}`, 50, y);
         ctx.fillRect(55, y, 5, 2);
       }
     }
@@ -509,7 +510,7 @@ You said:
           confetti.className = 'confetti';
           confetti.style.left = Math.random() * 100 + 'vw';
           confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-          confetti.style.animation = confetti-fall ${Math.random() * 3 + 2}s linear forwards;
+          confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear forwards`;
           document.body.appendChild(confetti);
           
           setTimeout(() => confetti.remove(), 5000);
@@ -530,12 +531,12 @@ You said:
     if (!document.querySelector('#confetti-style')) {
       const style = document.createElement('style');
       style.id = 'confetti-style';
-      style.textContent = 
+      style.textContent = `
         @keyframes confetti-fall {
           0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
           100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
         }
-      ;
+      `;
       document.head.appendChild(style);
     }
   </script>
